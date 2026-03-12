@@ -1,17 +1,9 @@
 #include "Client.h"
-#include <iostream>
-using namespace std;
 
-Client::Client() : Client("NoName", "NoPhone", 0) {}
-
-Client::Client(string name, string phone, int clientID)
-    : name(name), phone(phone), clientID(clientID) {}
-
-Client::~Client() {
-    cout << "Client destroyed: " << name << endl;
-}
+Client::Client() : Client("NoName", "None", 0) {}
+Client::Client(string n, string p, int id) : name(n), phone(p), clientID(id) {}
+Client::~Client() {}
 
 void Client::displayInfo() const {
-    cout << "Client: " << name << ", Phone: " << phone
-         << ", ID: " << clientID << endl;
+    cout << name << " (ID: " << clientID << ")";
 }

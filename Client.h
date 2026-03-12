@@ -1,7 +1,9 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <iostream>
 #include <string>
+
 using namespace std;
 
 class Client {
@@ -12,10 +14,10 @@ private:
 
 public:
     Client();
-    Client(string name, string phone, int clientID = 0);
+    Client(string n, string p, int id);
     ~Client();
-
     void displayInfo() const;
+    string getName() const { return name; }
 };
 
 #endif
