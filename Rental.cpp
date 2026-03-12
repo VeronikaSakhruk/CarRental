@@ -1,23 +1,22 @@
 #include "Rental.h"
-#include <iostream>
-using namespace std;
 
-Rental::Rental() : rentalDays(0), totalCost(0.0) {}
-
-Rental::Rental(int rentalDays, double pricePerDay)
-    : rentalDays(rentalDays) {
-    calculateCost(pricePerDay);
+Rental::Rental(const Car &c, const Client &cl, int d) : rentedCar(c), renter(cl), days(d) {
+    totalCost = d * 50.0;
 }
 
-Rental::~Rental() {
-    cout << "Rental destroyed." << endl;
-}
+void Rental::displayReport() const {
+    cout << "\n========================================" << endl;
+    cout << "           RENTAL AGREEMENT             " << endl;
+    cout << "========================================" << endl;
 
-void Rental::calculateCost(double pricePerDay) {
-    totalCost = rentalDays * pricePerDay;
-}
+    // Тут ми знову виводимо деталі через методи об'єктів
+    cout << "CUSTOMER: ";
+    renter.displayInfo(); // Покаже Ім'я та ID
 
-void Rental::displayInfo() const {
-    cout << "Rental days: " << rentalDays
-         << ", Total cost: " << totalCost << "$" << endl;
+    cout << "\nVEHICLE:  " << rentedCar; // Використає наш новий оператор <<
+
+    cout << "\n----------------------------------------" << endl;
+    cout << "DURATION: " << days << " days" << endl;
+    cout << "TOTAL:    $" << totalCost << endl;
+    cout << "========================================\n" << endl;
 }
