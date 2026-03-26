@@ -1,22 +1,16 @@
 #include "Rental.h"
+#include <iostream>
 
-Rental::Rental(const Car &c, const Client &cl, int d) : rentedCar(c), renter(cl), days(d) {
-    totalCost = d * 50.0;
-}
+Rental::Rental(Vehicle* v, Client* c, int d) : rentedVehicle(v), renter(c), days(d) {}
 
 void Rental::displayReport() const {
-    cout << "\n========================================" << endl;
-    cout << "           RENTAL AGREEMENT             " << endl;
-    cout << "========================================" << endl;
-
-    // Тут ми знову виводимо деталі через методи об'єктів
-    cout << "CUSTOMER: ";
-    renter.displayInfo(); // Покаже Ім'я та ID
-
-    cout << "\nVEHICLE:  " << rentedCar; // Використає наш новий оператор <<
-
-    cout << "\n----------------------------------------" << endl;
-    cout << "DURATION: " << days << " days" << endl;
-    cout << "TOTAL:    $" << totalCost << endl;
-    cout << "========================================\n" << endl;
+    std::cout << "\n--- Rental Agreement ---" << std::endl;
+    if (renter) {
+        renter->displayInfo();
+        std::cout << " (Discount: " << renter->getDiscount() * 100 << "%)" << std::endl;
+    }
+    std::cout << "Vehicle: ";
+    if (rentedVehicle) rentedVehicle->displayInfo();
+    std::cout << "\nDuration: " << days << " days" << std::endl;
+    std::cout << "----------------------" << std::endl;
 }

@@ -1,29 +1,23 @@
 #include <iostream>
+#include "ElectricCar.h"
+#include "Truck.h"
 #include "Rental.h"
+#include "CorporateClient.h"
 
 using namespace std;
 
 int main() {
-    // 1. Створюємо автопарк
-    Car car1("Tesla", "Model 3", 2023, 100.0);
-    Car car2("Ford", "Focus", 2019, 45.0);
-    Client client1("Anna", "123456789", 1);
+    ElectricCar tesla("Tesla", "Model 3", 2023, 120.0, 450, 75);
+    CorporateClient corp("Ivan", "0991234567", 101, "CyberTech");
+    Truck man("MAN", "TGX", 500, "Diesel", 20.0);
+    Client regular("Olena", "0507778899", 102);
 
-    // 2. Логічна дія: Клієнт просить дешевшу машину
-    cout << ">>> Manager checking prices..." << endl;
-    if (car1 > car2) {
-        cout << car2.getBrand() << " is more budget-friendly." << endl;
-    }
+    Rental order1(&tesla, &corp, 3);
+    order1.displayReport();
 
-    // 3. Логічна дія: Сталася інфляція, менеджер оновлює ціну одним кліком
-    ++car2;
-    cout << "Updated price for Ford (with tax): " << car2 << endl;
+    Rental order2(&man, &regular, 5);
+    order2.displayReport();
 
-    // 4. Оформлюємо оренду (тут виведеться і Анна, і машина)
-    Rental order(car1, client1, 5);
-    order.displayReport();
-
-    // 5. Статистика для власника бізнесу
     cout << "Total cars in system: " << Car::getTotalCars() << endl;
 
     return 0;

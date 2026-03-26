@@ -2,42 +2,46 @@
 
 int Car::totalCars = 0;
 
-Car::Car() : Car("Unknown", "Unknown", 2020, 0.0) {}
+Car::Car() : Vehicle("Unknown", "Unknown", 0, "None"), year(2020), pricePerDay(0.0) { totalCars++; }
 
-Car::Car(string b, string m, int y, double p) : brand(b), model(m), year(y), pricePerDay(p) {
+Car::Car(std::string b, std::string m, int y, double p, int hp, std::string t)
+    : Vehicle(b, m, hp, t), year(y), pricePerDay(p) {
     totalCars++;
 }
 
-// 1. Copy
-Car::Car(const Car &other) : brand(other.brand), model(other.model), year(other.year), pricePerDay(other.pricePerDay) {
+Car::Car(const Car &other) : Vehicle(other), year(other.year), pricePerDay(other.pricePerDay) {
     totalCars++;
 }
 
-// 2. Move
-Car::Car(Car &&other) noexcept : brand(move(other.brand)), model(move(other.model)), year(other.year), pricePerDay(other.pricePerDay) {}
+Car::Car(Car &&other) noexcept
+    : Vehicle(std::move(other)), year(other.year), pricePerDay(other.pricePerDay) {
+    other.year = 0;
+}
 
-Car::~Car() {}
+Car::~Car() { totalCars--; }
 
-void Car::setPrice(double pricePerDay) {
-    this->pricePerDay = pricePerDay; // 3. This usage
+Car& Car::operator=(const Car& other) {
+    if (this != &other) {
+        brand = other.brand;
+        model = other.model;
+        engine = other.engine;
+        year = other.year;
+        pricePerDay = other.pricePerDay;
+    }
+    return *this;
 }
 
 void Car::displayInfo() const {
-    cout << brand << " " << model << " (" << year << ")";
+    Vehicle::displayInfo();
+    std::cout << " | Year: " << year << " | Price: $" << pricePerDay << "/day";
 }
 
 int Car::getTotalCars() { return totalCars; }
 
-Car& Car::operator++() {
-    this->pricePerDay += 5.0;
-    return *this;
-}
+Car& Car::operator++() { this->pricePerDay += 5.0; return *this; }
+bool Car::operator>(const Car& other) const { return this->pricePerDay > other.pricePerDay; }
 
-bool Car::operator>(const Car& other) const {
-    return this->pricePerDay > other.pricePerDay;
-}
-
-ostream& operator<<(ostream& os, const Car& car) {
+std::ostream& operator<<(std::ostream& os, const Car& car) {
     os << car.brand << " " << car.model << " ($" << car.pricePerDay << "/day)";
     return os;
 }

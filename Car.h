@@ -1,35 +1,26 @@
 #ifndef CAR_H
 #define CAR_H
-
+#include "Vehicle.h"
 #include <iostream>
-#include <string>
 
-using namespace std;
-
-class Car {
-private:
-    string brand;
-    string model;
+class Car : public Vehicle {
+protected:
     int year;
     double pricePerDay;
-    static int totalCars; // 5. Static field
-
+    static int totalCars;
 public:
     Car();
-    Car(string b, string m, int y, double p);
-    Car(const Car &other);            // 1. Copy constructor
-    Car(Car &&other) noexcept;       // 2. Move constructor
-    ~Car();
+    Car(std::string b, std::string m, int y, double p, int hp, std::string t);
+    Car(const Car &other);
+    Car(Car &&other) noexcept;
+    virtual ~Car();
 
-    void setPrice(double price);     // 3. This pointer inside
-    void displayInfo() const;        // 4. Const method
+    Car& operator=(const Car& other);
     static int getTotalCars();
-    string getBrand() const { return brand; }
+    void displayInfo() const override;
 
-    Car& operator++();               // 6. Unary (Price inflation)
-    bool operator>(const Car& other) const; // 6. Binary (Price compare)
-
-    friend ostream& operator<<(ostream& os, const Car& car); // 7. Insertion
+    Car& operator++();
+    bool operator>(const Car& other) const;
+    friend std::ostream& operator<<(std::ostream& os, const Car& car);
 };
-
 #endif
