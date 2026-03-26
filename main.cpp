@@ -1,24 +1,34 @@
 #include <iostream>
+#include <vector>
 #include "ElectricCar.h"
-#include "Truck.h"
-#include "Rental.h"
 #include "CorporateClient.h"
 
 using namespace std;
 
+void printVehicle(const Vehicle& v) {
+    v.displayInfo();
+}
+
 int main() {
-    ElectricCar tesla("Tesla", "Model 3", 2023, 120.0, 450, 75);
+    ElectricCar tesla("Tesla", 450, "Electric", 2024, 120.5, 85);
     CorporateClient corp("Ivan", "0991234567", 101, "CyberTech");
-    Truck man("MAN", "TGX", 500, "Diesel", 20.0);
-    Client regular("Olena", "0507778899", 102);
 
-    Rental order1(&tesla, &corp, 3);
-    order1.displayReport();
+    Vehicle* vPtr = &tesla;
+    cout << "Pointer Polymorphism: ";
+    vPtr->displayInfo();
 
-    Rental order2(&man, &regular, 5);
-    order2.displayReport();
+    cout << "\nReference Polymorphism: ";
+    printVehicle(tesla);
 
-    cout << "Total cars in system: " << Car::getTotalCars() << endl;
+    cout << "\n\nInterface usage:";
+    IDisplayable* items[2];
+    items[0] = &tesla;
+    items[1] = &corp;
+
+    for(int i = 0; i < 2; i++) {
+        cout << "\nItem " << i+1 << ": ";
+        items[i]->printDetails();
+    }
 
     return 0;
 }
