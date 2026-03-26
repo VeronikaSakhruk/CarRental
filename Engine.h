@@ -13,6 +13,8 @@ public:
     Engine(int hp, const std::string& t);
     int getHP() const;
     std::string getType() const;
+
+    void displaySpecs() const;
 };
 
 #endif

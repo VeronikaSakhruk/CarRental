@@ -1,19 +1,23 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
-#include <string>
+#include "IDisplayable.h"
 #include "Engine.h"
+#include <string>
 
-class Vehicle {
+class Vehicle : public IDisplayable {
 protected:
     std::string brand;
-    std::string model;
     Engine engine;
 
 public:
-    Vehicle(const std::string& b, const std::string& m, int hp, const std::string& t);
+    Vehicle(std::string b, int hp, std::string t);
     virtual ~Vehicle();
+
     virtual void displayInfo() const;
+    virtual double calculateRental(int days) const = 0;
+
+    void printDetails() const override { displayInfo(); }
 };
 
 #endif
