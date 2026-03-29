@@ -1,15 +1,21 @@
 #include "Truck.h"
 #include <iostream>
 
-Truck::Truck(std::string b, int hp, std::string t, double capacity)
-    : Vehicle(b, hp, t), loadCapacity(capacity) {
+Truck::Truck(std::string brand, std::string plate, double price,
+             std::shared_ptr<Engine> engine, double loadCapacity)
+    : Vehicle(brand, plate, price, engine), loadCapacity(loadCapacity) {}
+
+std::string Truck::getType() const { return "Truck"; }
+
+void Truck::display() const {
+    std::cout << "[Truck] " << brand << " (" << plate << ")"
+              << " | Load: " << loadCapacity << "t"
+              << " | " << engine->getFuelType() << " " << engine->getHp() << "HP"
+              << " | Price: " << price << " UAH/day"
+              << " | " << (isAvailable ? "Available" : "Rented") << std::endl;
 }
 
-void Truck::displayInfo() const {
-    Vehicle::displayInfo();
-    std::cout << " | Truck Capacity: " << loadCapacity << " tons";
-}
-
-double Truck::calculateRental(int days) const {
-    return days * 200.0;
+std::string Truck::toFileLine() const {
+    // Truck;brand;plate;price;available;fuel;hp;loadCapacity
+    return Vehicle::toFileLine() + ";" + std::to_string(loadCapacity);
 }

@@ -1,16 +1,22 @@
 #include "Rental.h"
 #include <iostream>
+#include <fstream>
 
-Rental::Rental(Vehicle* v, Client* c, int d) : rentedVehicle(v), renter(c), days(d) {}
+Rental::Rental(std::shared_ptr<Vehicle> v, std::shared_ptr<Client> c, int days, double cost)
+    : vehicle(v), client(c), days(days), totalCost(cost), active(true) {}
 
-void Rental::displayReport() const {
-    std::cout << "\n--- Rental Agreement ---" << std::endl;
-    if (renter) {
-        renter->displayInfo();
-        std::cout << " (Discount: " << renter->getDiscount() * 100 << "%)" << std::endl;
+void Rental::display() const {
+    std::cout << client->getName() << " -> " << vehicle->getBrand()
+              << " (" << vehicle->getPlate() << ")"
+              << " | " << days << " days | " << totalCost << " UAH"
+              << " | " << (active ? "Active" : "Returned") << std::endl;
+}
+
+void Rental::logToFile() const {
+    std::ofstream out("history.txt", std::ios::app);
+    if (out) {
+        out << client->getName() << " rented " << vehicle->getBrand()
+            << " (" << vehicle->getPlate() << ")"
+            << " for " << days << " days, cost: " << totalCost << " UAH" << std::endl;
     }
-    std::cout << "Vehicle: ";
-    if (rentedVehicle) rentedVehicle->displayInfo();
-    std::cout << "\nDuration: " << days << " days" << std::endl;
-    std::cout << "----------------------" << std::endl;
 }

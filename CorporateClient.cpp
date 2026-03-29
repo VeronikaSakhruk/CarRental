@@ -1,16 +1,16 @@
 #include "CorporateClient.h"
-#include <iostream>
 
-CorporateClient::CorporateClient(std::string n, std::string p, int id, std::string cName)
-    : Client(n, p, id), companyName(cName) {}
+CorporateClient::CorporateClient(std::string name, std::string phone,
+                                 std::string company, double discount)
+    : Client(name, phone), company(company), discount(discount) {}
 
-void CorporateClient::displayInfo() const {
-    Client::displayInfo();
-    std::cout << " [Company: " << companyName << "]";
+std::string CorporateClient::getClientType() const {
+    return "Corporate (" + company + ")";
 }
 
-void CorporateClient::printDetails() const {
-    std::cout << "Company info: ";
-    displayInfo();
-    std::cout << std::endl;
+double CorporateClient::getDiscount() const { return discount; }
+
+std::string CorporateClient::toFileLine() const {
+    return "CorporateClient;" + name + ";" + phone + ";"
+         + company + ";" + std::to_string(discount);
 }

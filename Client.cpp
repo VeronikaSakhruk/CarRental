@@ -1,26 +1,11 @@
 #include "Client.h"
-#include <iostream>
 
-Client::Client()
-    : name("Unknown"), phone("None"), clientID(0) {
-}
+Client::Client(std::string name, std::string phone) : name(name), phone(phone) {}
 
-Client::Client(std::string n, std::string p, int id)
-    : name(n), phone(p), clientID(id) {
-}
+std::string Client::getName() const { return name; }
+std::string Client::getPhone() const { return phone; }
+std::string Client::getClientType() const { return "Client"; }
 
-Client::~Client() {}
-
-void Client::displayInfo() const {
-    std::cout << "Client: " << name
-              << " | ID: " << clientID
-              << " | Phone: " << phone;
-}
-
-void Client::printDetails() const {
-    displayInfo();
-}
-
-double Client::getDiscount() const {
-    return 0.0;
+std::string Client::toFileLine() const {
+    return "Client;" + name + ";" + phone;
 }

@@ -1,20 +1,16 @@
 #ifndef ENGINE_H
 #define ENGINE_H
-
 #include <string>
 
 class Engine {
-private:
+    std::string fuelType;
     int horsepower;
-    std::string type;
 
 public:
-    Engine();
-    Engine(int hp, const std::string& t);
-    int getHP() const;
-    std::string getType() const;
+    Engine(std::string fuel, int hp) : fuelType(fuel), horsepower(hp) {}
 
-    void displaySpecs() const;
+    std::string getFuelType() const { return fuelType; }
+    int getHp() const { return horsepower; }
 };
 
 #endif

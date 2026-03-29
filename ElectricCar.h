@@ -1,15 +1,17 @@
-#ifndef ELECTRIC_CAR_H
-#define ELECTRIC_CAR_H
+#ifndef ELECTRICCAR_H
+#define ELECTRICCAR_H
+#include "Vehicle.h"
 
-#include "Car.h"
-
-class ElectricCar : public Car {
-private:
+class ElectricCar : public Vehicle {
     int batteryCapacity;
-public:
-    ElectricCar(std::string b, int hp, std::string t, int y, double rate, int battery);
 
-    void displayInfo() const override;
+public:
+    ElectricCar(std::string brand, std::string plate, double price,
+                std::shared_ptr<Engine> engine, int battery);
+
+    std::string getType() const override;
+    void display() const override;
+    std::string toFileLine() const override;
 };
 
 #endif

@@ -1,19 +1,13 @@
 #ifndef CAR_H
 #define CAR_H
-
 #include "Vehicle.h"
 
 class Car : public Vehicle {
-protected:
-    double dailyRate;
-    int year;
 public:
-    Car();
-    Car(std::string b, int hp, std::string t, int y, double rate);
+    Car(std::string brand, std::string plate, double price, std::shared_ptr<Engine> engine);
 
-    virtual ~Car();
-    void displayInfo() const override;
-    double calculateRental(int days) const override;
+    std::string getType() const override;
+    void display() const override;
 };
 
 #endif

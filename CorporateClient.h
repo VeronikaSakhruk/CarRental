@@ -1,16 +1,17 @@
-#ifndef CORPORATE_CLIENT_H
-#define CORPORATE_CLIENT_H
-
+#ifndef CORPORATECLIENT_H
+#define CORPORATECLIENT_H
 #include "Client.h"
 
 class CorporateClient : public Client {
-private:
-    std::string companyName;
-public:
-    CorporateClient(std::string n, std::string p, int id, std::string cName);
+    std::string company;
+    double discount;
 
-    void displayInfo() const override;
-    void printDetails() const override;
+public:
+    CorporateClient(std::string name, std::string phone, std::string company, double discount);
+
+    std::string getClientType() const override;
+    double getDiscount() const;
+    std::string toFileLine() const override;
 };
 
 #endif
