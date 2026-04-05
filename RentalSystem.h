@@ -6,6 +6,7 @@
 #include "Vehicle.h"
 #include "Client.h"
 #include "Rental.h"
+#include "Exceptions.h"
 
 class RentalSystem {
     std::vector<std::shared_ptr<Vehicle>> vehicles;

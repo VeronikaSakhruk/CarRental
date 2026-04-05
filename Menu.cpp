@@ -3,12 +3,12 @@
 #include "ElectricCar.h"
 #include "Truck.h"
 #include "CorporateClient.h"
+#include "Exceptions.h"
 #include <iostream>
 #include <fstream>
 #include <limits>
 
 Menu::Menu(RentalSystem& system) : system(system) {
-    // завантажуємо пароль з файлу, якщо є
     adminPassword = "admin123";
     std::ifstream f("password.txt");
     if (f) std::getline(f, adminPassword);
@@ -19,11 +19,12 @@ bool Menu::checkPassword() {
     std::cout << "Password: ";
     std::cin >> p;
     std::cin.ignore();
-    return p == adminPassword;
+    if (p != adminPassword)
+        throw WrongPasswordException();
+    return true;
 }
 
 void Menu::run() {
-    // завантажуємо дані при старті
     system.loadVehicles();
     system.loadClients();
 
@@ -44,8 +45,12 @@ void Menu::run() {
 
         if (choice == 0) break;
         else if (choice == 1) {
-            if (checkPassword()) adminMenu();
-            else std::cout << "Wrong password!" << std::endl;
+            try {
+                checkPassword();
+                adminMenu();
+            } catch (const WrongPasswordException& e) {
+                std::cout << "Error: " << e.what() << std::endl;
+            }
         }
         else if (choice == 2) userMenu();
         else std::cout << "Invalid choice." << std::endl;
@@ -78,97 +83,101 @@ void Menu::adminMenu() {
 
         if (choice == 0) break;
 
-        else if (choice == 1) {
-            system.showVehicles();
-        }
-        else if (choice == 2) {
-            std::string brand, plate, fuel;
-            double price; int hp;
-            std::cout << "Brand: "; std::getline(std::cin, brand);
-            std::cout << "Plate: "; std::getline(std::cin, plate);
-            std::cout << "Price/day: "; std::cin >> price; std::cin.ignore();
-            std::cout << "Fuel type: "; std::getline(std::cin, fuel);
-            std::cout << "HP: "; std::cin >> hp; std::cin.ignore();
+        try {
+            if (choice == 1) {
+                system.showVehicles();
+            }
+            else if (choice == 2) {
+                std::string brand, plate, fuel;
+                double price; int hp;
+                std::cout << "Brand: "; std::getline(std::cin, brand);
+                std::cout << "Plate: "; std::getline(std::cin, plate);
+                std::cout << "Price/day: "; std::cin >> price; std::cin.ignore();
+                std::cout << "Fuel type: "; std::getline(std::cin, fuel);
+                std::cout << "HP: "; std::cin >> hp; std::cin.ignore();
 
-            auto eng = std::make_shared<Engine>(fuel, hp);
-            system.addVehicle(std::make_shared<Car>(brand, plate, price, eng));
-            system.saveVehicles();
-            std::cout << "Car added." << std::endl;
-        }
-        else if (choice == 3) {
-            std::string brand, plate, fuel;
-            double price; int hp, battery;
-            std::cout << "Brand: "; std::getline(std::cin, brand);
-            std::cout << "Plate: "; std::getline(std::cin, plate);
-            std::cout << "Price/day: "; std::cin >> price; std::cin.ignore();
-            std::cout << "Fuel type: "; std::getline(std::cin, fuel);
-            std::cout << "HP: "; std::cin >> hp; std::cin.ignore();
-            std::cout << "Battery (kWh): "; std::cin >> battery; std::cin.ignore();
+                auto eng = std::make_shared<Engine>(fuel, hp);
+                system.addVehicle(std::make_shared<Car>(brand, plate, price, eng));
+                system.saveVehicles();
+                std::cout << "Car added." << std::endl;
+            }
+            else if (choice == 3) {
+                std::string brand, plate, fuel;
+                double price; int hp, battery;
+                std::cout << "Brand: "; std::getline(std::cin, brand);
+                std::cout << "Plate: "; std::getline(std::cin, plate);
+                std::cout << "Price/day: "; std::cin >> price; std::cin.ignore();
+                std::cout << "Fuel type: "; std::getline(std::cin, fuel);
+                std::cout << "HP: "; std::cin >> hp; std::cin.ignore();
+                std::cout << "Battery (kWh): "; std::cin >> battery; std::cin.ignore();
 
-            auto eng = std::make_shared<Engine>(fuel, hp);
-            system.addVehicle(std::make_shared<ElectricCar>(brand, plate, price, eng, battery));
-            system.saveVehicles();
-            std::cout << "Electric car added." << std::endl;
-        }
-        else if (choice == 4) {
-            std::string brand, plate, fuel;
-            double price, load; int hp;
-            std::cout << "Brand: "; std::getline(std::cin, brand);
-            std::cout << "Plate: "; std::getline(std::cin, plate);
-            std::cout << "Price/day: "; std::cin >> price; std::cin.ignore();
-            std::cout << "Fuel type: "; std::getline(std::cin, fuel);
-            std::cout << "HP: "; std::cin >> hp; std::cin.ignore();
-            std::cout << "Load capacity (tons): "; std::cin >> load; std::cin.ignore();
+                auto eng = std::make_shared<Engine>(fuel, hp);
+                system.addVehicle(std::make_shared<ElectricCar>(brand, plate, price, eng, battery));
+                system.saveVehicles();
+                std::cout << "Electric car added." << std::endl;
+            }
+            else if (choice == 4) {
+                std::string brand, plate, fuel;
+                double price, load; int hp;
+                std::cout << "Brand: "; std::getline(std::cin, brand);
+                std::cout << "Plate: "; std::getline(std::cin, plate);
+                std::cout << "Price/day: "; std::cin >> price; std::cin.ignore();
+                std::cout << "Fuel type: "; std::getline(std::cin, fuel);
+                std::cout << "HP: "; std::cin >> hp; std::cin.ignore();
+                std::cout << "Load capacity (tons): "; std::cin >> load; std::cin.ignore();
 
-            auto eng = std::make_shared<Engine>(fuel, hp);
-            system.addVehicle(std::make_shared<Truck>(brand, plate, price, eng, load));
-            system.saveVehicles();
-            std::cout << "Truck added." << std::endl;
-        }
-        else if (choice == 5) {
-            system.showVehicles();
-            if (system.getVehicleCount() == 0) continue;
-            size_t idx;
-            std::cout << "Number to remove: "; std::cin >> idx; std::cin.ignore();
-            system.removeVehicle(idx - 1);
-        }
-        else if (choice == 6) {
-            std::string name, phone;
-            std::cout << "Name: "; std::getline(std::cin, name);
-            std::cout << "Phone: "; std::getline(std::cin, phone);
-            system.addClient(std::make_shared<Client>(name, phone));
-            system.saveClients();
-            std::cout << "Client added." << std::endl;
-        }
-        else if (choice == 7) {
-            std::string name, phone, company;
-            double discount;
-            std::cout << "Name: "; std::getline(std::cin, name);
-            std::cout << "Phone: "; std::getline(std::cin, phone);
-            std::cout << "Company: "; std::getline(std::cin, company);
-            std::cout << "Discount (%): "; std::cin >> discount; std::cin.ignore();
-            system.addClient(std::make_shared<CorporateClient>(name, phone, company, discount));
-            system.saveClients();
-            std::cout << "Corporate client added." << std::endl;
-        }
-        else if (choice == 8) {
-            system.showClients();
-        }
-        else if (choice == 9) {
-            system.showRentals();
-        }
-        else if (choice == 10) {
-            std::string np;
-            std::cout << "New password: "; std::getline(std::cin, np);
-            if (!np.empty()) {
+                auto eng = std::make_shared<Engine>(fuel, hp);
+                system.addVehicle(std::make_shared<Truck>(brand, plate, price, eng, load));
+                system.saveVehicles();
+                std::cout << "Truck added." << std::endl;
+            }
+            else if (choice == 5) {
+                system.showVehicles();
+                if (system.getVehicleCount() == 0) continue;
+                size_t idx;
+                std::cout << "Number to remove: "; std::cin >> idx; std::cin.ignore();
+                system.removeVehicle(idx - 1);
+            }
+            else if (choice == 6) {
+                std::string name, phone;
+                std::cout << "Name: "; std::getline(std::cin, name);
+                std::cout << "Phone: "; std::getline(std::cin, phone);
+                system.addClient(std::make_shared<Client>(name, phone));
+                system.saveClients();
+                std::cout << "Client added." << std::endl;
+            }
+            else if (choice == 7) {
+                std::string name, phone, company;
+                double discount;
+                std::cout << "Name: "; std::getline(std::cin, name);
+                std::cout << "Phone: "; std::getline(std::cin, phone);
+                std::cout << "Company: "; std::getline(std::cin, company);
+                std::cout << "Discount (%): "; std::cin >> discount; std::cin.ignore();
+                system.addClient(std::make_shared<CorporateClient>(name, phone, company, discount));
+                system.saveClients();
+                std::cout << "Corporate client added." << std::endl;
+            }
+            else if (choice == 8) {
+                system.showClients();
+            }
+            else if (choice == 9) {
+                system.showRentals();
+            }
+            else if (choice == 10) {
+                std::string np;
+                std::cout << "New password: "; std::getline(std::cin, np);
+                if (np.empty()) throw RentalException("Password cannot be empty.");
                 adminPassword = np;
                 std::ofstream f("password.txt");
-                if (f) f << adminPassword;
+                if (!f) throw FileException("password.txt");
+                f << adminPassword;
                 std::cout << "Password changed." << std::endl;
             }
-        }
-        else {
-            std::cout << "Invalid choice." << std::endl;
+            else {
+                std::cout << "Invalid choice." << std::endl;
+            }
+        } catch (const RentalException& e) {
+            std::cout << "Error: " << e.what() << std::endl;
         }
     }
 }
@@ -193,36 +202,40 @@ void Menu::userMenu() {
 
         if (choice == 0) break;
 
-        else if (choice == 1) {
-            system.showAvailableVehicles();
-        }
-        else if (choice == 2) {
-            system.showAvailableVehicles();
-            system.showClients();
-            if (system.getVehicleCount() == 0 || system.getClientCount() == 0) continue;
+        try {
+            if (choice == 1) {
+                system.showAvailableVehicles();
+            }
+            else if (choice == 2) {
+                system.showAvailableVehicles();
+                system.showClients();
+                if (system.getVehicleCount() == 0 || system.getClientCount() == 0) continue;
 
-            size_t vIdx, cIdx; int days;
-            std::cout << "Vehicle number: "; std::cin >> vIdx; std::cin.ignore();
-            std::cout << "Client number: "; std::cin >> cIdx; std::cin.ignore();
-            std::cout << "Days: "; std::cin >> days; std::cin.ignore();
-            system.rentVehicle(vIdx - 1, cIdx - 1, days);
-        }
-        else if (choice == 3) {
-            system.showRentals();
-            if (system.getClientCount() == 0) continue;
-            size_t rIdx;
-            std::cout << "Rental number: "; std::cin >> rIdx; std::cin.ignore();
-            system.returnVehicle(rIdx - 1);
-        }
-        else if (choice == 4) {
-            system.showClients();
-            if (system.getClientCount() == 0) continue;
-            size_t cIdx;
-            std::cout << "Client number: "; std::cin >> cIdx; std::cin.ignore();
-            system.showClientHistory(cIdx - 1);
-        }
-        else {
-            std::cout << "Invalid choice." << std::endl;
+                size_t vIdx, cIdx; int days;
+                std::cout << "Vehicle number: "; std::cin >> vIdx; std::cin.ignore();
+                std::cout << "Client number: "; std::cin >> cIdx; std::cin.ignore();
+                std::cout << "Days: "; std::cin >> days; std::cin.ignore();
+                system.rentVehicle(vIdx - 1, cIdx - 1, days);
+            }
+            else if (choice == 3) {
+                system.showRentals();
+                if (system.getClientCount() == 0) continue;
+                size_t rIdx;
+                std::cout << "Rental number: "; std::cin >> rIdx; std::cin.ignore();
+                system.returnVehicle(rIdx - 1);
+            }
+            else if (choice == 4) {
+                system.showClients();
+                if (system.getClientCount() == 0) continue;
+                size_t cIdx;
+                std::cout << "Client number: "; std::cin >> cIdx; std::cin.ignore();
+                system.showClientHistory(cIdx - 1);
+            }
+            else {
+                std::cout << "Invalid choice." << std::endl;
+            }
+        } catch (const RentalException& e) {
+            std::cout << "Error: " << e.what() << std::endl;
         }
     }
 }

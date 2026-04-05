@@ -3,28 +3,27 @@
 #include "ElectricCar.h"
 #include "Truck.h"
 #include "CorporateClient.h"
+#include "Exceptions.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
-// Vehicles
 
+// Vehicles
 void RentalSystem::addVehicle(std::shared_ptr<Vehicle> v) {
     vehicles.push_back(v);
 }
 
 void RentalSystem::removeVehicle(size_t index) {
-    if (index < vehicles.size()) {
-        if (!vehicles[index]->getAvailable()) {
-            std::cout << "Cannot remove: vehicle is currently rented." << std::endl;
-            return;
-        }
-        std::cout << "Removed: " << vehicles[index]->getBrand() << std::endl;
-        vehicles.erase(vehicles.begin() + index);
-        saveVehicles();
-    } else {
-        std::cout << "Wrong index!" << std::endl;
-    }
+    if (index >= vehicles.size())
+        throw InvalidIndexException();
+
+    if (!vehicles[index]->getAvailable())
+        throw RentalException("Cannot remove: vehicle is currently rented.");
+
+    std::cout << "Removed: " << vehicles[index]->getBrand() << std::endl;
+    vehicles.erase(vehicles.begin() + index);
+    saveVehicles();
 }
 
 void RentalSystem::showVehicles() const {
@@ -53,8 +52,8 @@ size_t RentalSystem::getVehicleCount() const { return vehicles.size(); }
 
 std::shared_ptr<Vehicle> RentalSystem::getVehicle(size_t i) { return vehicles[i]; }
 
-// Clients
 
+// Clients
 void RentalSystem::addClient(std::shared_ptr<Client> c) {
     clients.push_back(c);
 }
@@ -73,20 +72,20 @@ size_t RentalSystem::getClientCount() const { return clients.size(); }
 
 std::shared_ptr<Client> RentalSystem::getClient(size_t i) { return clients[i]; }
 
-// ---- RENTALS ----
 
+// Rentals
 void RentalSystem::rentVehicle(size_t vIdx, size_t cIdx, int days) {
-    if (vIdx >= vehicles.size() || cIdx >= clients.size()) {
-        std::cout << "Wrong index!" << std::endl;
-        return;
-    }
+    if (vIdx >= vehicles.size() || cIdx >= clients.size())
+        throw InvalidIndexException();
+
+    if (days <= 0)
+        throw RentalException("Number of days must be positive.");
+
     auto v = vehicles[vIdx];
     auto c = clients[cIdx];
 
-    if (!v->getAvailable()) {
-        std::cout << "Vehicle is already rented!" << std::endl;
-        return;
-    }
+    if (!v->getAvailable())
+        throw VehicleNotAvailableException();
 
     double cost = v->getPrice() * days;
 
@@ -106,15 +105,13 @@ void RentalSystem::rentVehicle(size_t vIdx, size_t cIdx, int days) {
 }
 
 void RentalSystem::returnVehicle(size_t rIdx) {
-    if (rIdx >= rentals.size()) {
-        std::cout << "Wrong index!" << std::endl;
-        return;
-    }
+    if (rIdx >= rentals.size())
+        throw InvalidIndexException();
+
     auto r = rentals[rIdx];
-    if (!r->active) {
-        std::cout << "Already returned." << std::endl;
-        return;
-    }
+    if (!r->active)
+        throw AlreadyReturnedException();
+
     r->active = false;
     r->vehicle->setAvailable(true);
     saveVehicles();
@@ -131,7 +128,9 @@ void RentalSystem::showRentals() const {
 }
 
 void RentalSystem::showClientHistory(size_t cIdx) const {
-    if (cIdx >= clients.size()) { std::cout << "Wrong index!" << std::endl; return; }
+    if (cIdx >= clients.size())
+        throw InvalidIndexException();
+
     std::string name = clients[cIdx]->getName();
     std::cout << "\n--- History for " << name << " ---" << std::endl;
     bool found = false;
@@ -144,11 +143,11 @@ void RentalSystem::showClientHistory(size_t cIdx) const {
     if (!found) std::cout << "No rentals found." << std::endl;
 }
 
-// Files
 
+// Files
 void RentalSystem::saveVehicles() const {
     std::ofstream out("vehicles.txt");
-    if (!out) { std::cout << "Cannot save vehicles!" << std::endl; return; }
+    if (!out) throw FileException("vehicles.txt");
     for (auto& v : vehicles)
         out << v->toFileLine() << std::endl;
 }
@@ -161,45 +160,49 @@ void RentalSystem::loadVehicles() {
     std::string line;
     while (std::getline(in, line)) {
         if (line.empty()) continue;
-        std::stringstream ss(line);
-        std::string token;
-        std::vector<std::string> parts;
-        while (std::getline(ss, token, ';'))
-            parts.push_back(token);
+        try {
+            std::stringstream ss(line);
+            std::string token;
+            std::vector<std::string> parts;
+            while (std::getline(ss, token, ';'))
+                parts.push_back(token);
 
-        if (parts.size() < 7) continue;
+            if (parts.size() < 7) continue;
 
-        std::string type    = parts[0];
-        std::string brand   = parts[1];
-        std::string plate   = parts[2];
-        double price        = std::stod(parts[3]);
-        bool available      = (parts[4] == "1");
-        std::string fuel    = parts[5];
-        int hp              = std::stoi(parts[6]);
+            std::string type  = parts[0];
+            std::string brand = parts[1];
+            std::string plate = parts[2];
+            double price      = std::stod(parts[3]);
+            bool available    = (parts[4] == "1");
+            std::string fuel  = parts[5];
+            int hp            = std::stoi(parts[6]);
 
-        auto eng = std::make_shared<Engine>(fuel, hp);
+            auto eng = std::make_shared<Engine>(fuel, hp);
+            std::shared_ptr<Vehicle> v;
 
-        std::shared_ptr<Vehicle> v;
-        if (type == "Car") {
-            v = std::make_shared<Car>(brand, plate, price, eng);
-        } else if (type == "ElectricCar" && parts.size() >= 8) {
-            int battery = std::stoi(parts[7]);
-            v = std::make_shared<ElectricCar>(brand, plate, price, eng, battery);
-        } else if (type == "Truck" && parts.size() >= 8) {
-            double load = std::stod(parts[7]);
-            v = std::make_shared<Truck>(brand, plate, price, eng, load);
-        } else {
-            continue;
+            if (type == "Car") {
+                v = std::make_shared<Car>(brand, plate, price, eng);
+            } else if (type == "ElectricCar" && parts.size() >= 8) {
+                int battery = std::stoi(parts[7]);
+                v = std::make_shared<ElectricCar>(brand, plate, price, eng, battery);
+            } else if (type == "Truck" && parts.size() >= 8) {
+                double load = std::stod(parts[7]);
+                v = std::make_shared<Truck>(brand, plate, price, eng, load);
+            } else {
+                continue;
+            }
+
+            v->setAvailable(available);
+            vehicles.push_back(v);
+        } catch (const std::exception& e) {
+            std::cout << "Warning: skipping bad line in vehicles.txt: " << e.what() << std::endl;
         }
-
-        v->setAvailable(available);
-        vehicles.push_back(v);
     }
 }
 
 void RentalSystem::saveClients() const {
     std::ofstream out("clients.txt");
-    if (!out) { std::cout << "Cannot save clients!" << std::endl; return; }
+    if (!out) throw FileException("clients.txt");
     for (auto& c : clients)
         out << c->toFileLine() << std::endl;
 }
@@ -212,19 +215,23 @@ void RentalSystem::loadClients() {
     std::string line;
     while (std::getline(in, line)) {
         if (line.empty()) continue;
-        std::stringstream ss(line);
-        std::string token;
-        std::vector<std::string> parts;
-        while (std::getline(ss, token, ';'))
-            parts.push_back(token);
+        try {
+            std::stringstream ss(line);
+            std::string token;
+            std::vector<std::string> parts;
+            while (std::getline(ss, token, ';'))
+                parts.push_back(token);
 
-        if (parts.size() < 3) continue;
+            if (parts.size() < 3) continue;
 
-        if (parts[0] == "Client") {
-            clients.push_back(std::make_shared<Client>(parts[1], parts[2]));
-        } else if (parts[0] == "CorporateClient" && parts.size() >= 5) {
-            clients.push_back(std::make_shared<CorporateClient>(
-                parts[1], parts[2], parts[3], std::stod(parts[4])));
+            if (parts[0] == "Client") {
+                clients.push_back(std::make_shared<Client>(parts[1], parts[2]));
+            } else if (parts[0] == "CorporateClient" && parts.size() >= 5) {
+                clients.push_back(std::make_shared<CorporateClient>(
+                    parts[1], parts[2], parts[3], std::stod(parts[4])));
+            }
+        } catch (const std::exception& e) {
+            std::cout << "Warning: skipping bad line in clients.txt: " << e.what() << std::endl;
         }
     }
 }

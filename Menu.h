@@ -1,6 +1,7 @@
 #ifndef MENU_H
 #define MENU_H
 #include "RentalSystem.h"
+#include "Exceptions.h"
 #include <string>
 
 class Menu {
